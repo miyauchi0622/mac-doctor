@@ -25,4 +25,17 @@ mkdir -p "$APP/Contents/Resources/macdoctor"
 cp "$ROOT/src/"*.sh "$APP/Contents/Resources/macdoctor/"
 chmod +x "$APP/Contents/Resources/macdoctor/"*.sh
 
-echo "生成しました: $APP"
+# 中身を入れたあとで必ず署名し直す。
+# osacompile は生成時にアドホック署名を付けるが、その後にファイルを足すと
+# 封が破れる。破れたままダウンロードされると macOS が「壊れているため開けません。
+# ゴミ箱に入れる必要があります」と表示し、右クリックでも起動できなくなる。
+codesign --force --deep --sign - "$APP" 2>/dev/null
+
+# 署名が有効でなければビルドを失敗させる。壊れた配布物を出さないための関門。
+if ! codesign --verify --deep --strict "$APP" 2>/dev/null; then
+  echo "エラー: 署名が壊れています。配布してはいけません。" >&2
+  codesign --verify --verbose=4 "$APP" >&2 2>&1 | head -10
+  exit 1
+fi
+
+echo "生成しました: $APP（署名の検証: 合格）"
