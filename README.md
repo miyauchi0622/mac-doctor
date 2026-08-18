@@ -8,7 +8,12 @@ PC に詳しくない人が自分で実行できることを目的にしてい�
 
 ## ダウンロード
 
-[最新版をダウンロード](../../releases/latest/download/Mac-Shindan.zip)
+**配布ページ: https://miyauchi0622.github.io/mac-doctor/**
+
+使い方の説明つきのページです。ログインは不要です。
+
+ファイルだけ欲しい場合は
+[こちらから直接ダウンロード](../../releases/latest/download/Mac-Shindan.zip)できます。
 
 macOS 13 以降 / Apple Silicon・Intel 両対応
 
