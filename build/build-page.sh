@@ -26,13 +26,22 @@ ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
 SIZE=$(awk -v b="$(wc -c < "$ZIP" | tr -d ' ')" 'BEGIN{printf "%.0f KB", b/1024}')
 DATE=$(date '+%Y-%m-%d')
 
-awk -v url="$DOWNLOAD_URL" -v size="$SIZE" -v d="$DATE" '
-  { line=$0
-    gsub(/__DOWNLOAD_URL__/, url,  line)
-    gsub(/__ZIP_SIZE__/,     size, line)
-    gsub(/__BUILD_DATE__/,   d,    line)
-    print line }
-' "$TPL" > "$OUT"
+# テンプレートは <title> と <style> から始まる断片なので、
+# 単体で開ける完全な HTML 文書に包む。GitHub Pages で配信するため必須。
+{
+  printf '%s\n' '<!doctype html>' '<html lang="ja">' '<head>' \
+    '<meta charset="utf-8">' \
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'
+  awk -v url="$DOWNLOAD_URL" -v size="$SIZE" -v d="$DATE" '
+    { line=$0
+      gsub(/__DOWNLOAD_URL__/, url,  line)
+      gsub(/__ZIP_SIZE__/,     size, line)
+      gsub(/__BUILD_DATE__/,   d,    line)
+      print line
+      if (line ~ /^<\/style>/) print "</head>\n<body>" }
+  ' "$TPL"
+  printf '%s\n' '</body>' '</html>'
+} > "$OUT"
 
 # 差し込み漏れがあれば失敗させる
 if grep -q '__DOWNLOAD_URL__\|__ZIP_SIZE__\|__BUILD_DATE__' "$OUT"; then
